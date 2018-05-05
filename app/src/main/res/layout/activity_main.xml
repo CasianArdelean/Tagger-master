@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.dm2.tagger.MainActivity">
+
+    <EditText
+        android:id="@+id/txtBuscarTagg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp" />
+    <Button
+        android:id="@+id/btnConectar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/buscar"
+        android:layout_marginTop="20dp"
+        android:width="200dp"
+        android:onClick="buscarImagenes"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/seleccionarImagen"
+            android:layout_marginTop="0dp"
+            android:width="200dp"
+            android:onClick="seleccionarImagen"/>
+        <Button
+            android:id="@+id/btnSubir"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/sub"
+            android:layout_marginTop="0dp"
+            android:width="200dp"
+            android:onClick="subirImagen"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Titulo: "/>
+        <EditText
+            android:id="@+id/tituloImagen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:width="200dp"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tagg: "/>
+        <EditText
+            android:id="@+id/taggImagen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:width="200dp"/>
+
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/Imageprev"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_marginTop="10dp" />
+
+
+</LinearLayout>

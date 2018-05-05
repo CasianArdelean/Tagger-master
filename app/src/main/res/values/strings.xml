@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Tagger</string>
+    <string name="buscar">Buscar Imagenes</string>
+    <string name="seleccionarImagen">Seleccionar Imagen</string>
+    <string name="sub">Subir Imagen</string>
+    <string name="cancelar">CANCELAR</string>
+    <string name="aplicar">APLICAR</string>
+</resources>
