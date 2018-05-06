@@ -44,7 +44,8 @@
             android:text="@string/sub"
             android:layout_marginTop="0dp"
             android:width="200dp"
-            android:onClick="subirImagen"/>
+            android:onClick="subirImagen"
+            android:enabled="false"/>
 
     </LinearLayout>
 

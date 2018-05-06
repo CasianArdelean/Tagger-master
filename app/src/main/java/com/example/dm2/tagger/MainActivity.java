@@ -3,6 +3,7 @@ package com.example.dm2.tagger;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -19,6 +20,7 @@ import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,8 +62,9 @@ public class MainActivity extends AppCompatActivity {
     String tagg;
     String taggBuscar;
     byte[] byteArray;
-    ArrayList<Imagen> arrBit = new ArrayList<>();
+    ArrayList<Imagen> arrBit ;
     byte[] buffer;
+    Context context;
 
     private static final int STORAGE_PERMISSION_CODE = 1111;
     private static final int PICK_IMAGE_REQUEST = 2222;
@@ -75,48 +78,46 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         requestStoragePermission();
         imageV = (ImageView) findViewById(R.id.Imageprev);
+        context=this;
 
 
     }
-
+    //CLICK BOTON buscar imagenes
     public void buscarImagenes(View v) {
+        //inicializamos array y cogemos los valores de los edit text
+        arrBit = new ArrayList<>();
         txtBuscarTagg = (TextView) findViewById(R.id.txtBuscarTagg);
         taggBuscar = txtBuscarTagg.getText().toString();
+        //ponemos valor a 1 , es el de buscar imagen
         numero = 1;
-
+        //ejecutamos
         myTask mt = new myTask();
         mt.execute();
-
-        if (arrBit.size() > 0) {
-            Intent Intent = new Intent(this, listarImagenes.class);
-            Bundle b = new Bundle();
-            b.putSerializable("array", (Serializable) arrBit);
-            Intent.putExtra("arr", b);
-            startActivity(Intent);
-        } else {
-            Toast.makeText(this, "No hay ninguna imagen", Toast.LENGTH_LONG).show();
-        }
-
-
     }
-
+    //CLICK BOTON seleccionar imagen
     public void seleccionarImagen(View v) {
         showFileChooser();
     }
-
+    //CLICK BOTON subir imagen
     public void subirImagen(View v) {
+        //cogemos contenido de los edit text
         txtTaggImagen = (TextView) findViewById(R.id.taggImagen);
         txtTituloImagen = (TextView) findViewById(R.id.tituloImagen);
         titulo = txtTituloImagen.getText().toString();
         tagg = txtTaggImagen.getText().toString();
+        //ponemos valor a 2 , es el de subir imagen
         numero = 2;
-
-        myTask mt = new myTask();
-        mt.execute();
-
+        //comprobamos que todos los campos estan rellenos
+        if (!titulo.equalsIgnoreCase("") && !tagg.equalsIgnoreCase("")) {
+            //ejecutamos
+            myTask mt = new myTask();
+            mt.execute();
+        }else{
+            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_LONG).show();
+        }
 
     }
-
+    //Comprobamos permisos
     private void requestStoragePermission() {
         if (android.support.v4.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
             return;
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    //Cogemos fotos del movil
     private void showFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -145,12 +146,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        //Comprobamos que a escogido una foto
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             filePath = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
                 imageV.setImageBitmap(bitmap);
+                Button btn=(Button) findViewById(R.id.btnSubir);
+                //Al escoger foto activamos el boton
+                btn.setEnabled(true);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -160,10 +164,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class myTask extends AsyncTask<String, Void, String> {
-
-
         protected void onPostExecute(String s) {
-            //imageV.setImageBitmap(arrBit.get(0).getBit());
+
+                if(numero==2){
+                    Toast.makeText(context, "Foto enviada", Toast.LENGTH_LONG).show();
+                }else{
+                    //comprobamos que hay fotos recogidas
+                    if (arrBit.size() > 0) {
+                        Toast.makeText(context, "Fotos recibidas", Toast.LENGTH_LONG).show();
+                        Intent Intent = new Intent(context, listarImagenes.class);
+                        Bundle b = new Bundle();
+                        b.putSerializable("array", (Serializable) arrBit);
+                        Intent.putExtra("arr", b);
+                        startActivity(Intent);
+                    } else {
+                        Toast.makeText(context, "No hay ninguna imagen", Toast.LENGTH_LONG).show();
+                    }
+                }
         }
 
         protected String doInBackground(String... params) {
@@ -174,52 +191,54 @@ public class MainActivity extends AppCompatActivity {
                 dos = new DataOutputStream(conexion.getOutputStream());
 
                 if (numero == 2) {
+                    //Enviamos fotos
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                     byteArray = stream.toByteArray();
-                    bitmap.recycle();
-
                     dos.writeInt(numero);
                     dos.writeUTF(titulo);
+                    //reemplazamos espacios por #
+                    tagg=tagg.replaceAll(" ","#");
                     dos.writeUTF(tagg);
                     dos.write(byteArray);
                 } else {
+                    //enviamos el numero y los tags.
                     dos.writeInt(numero);
                     dos.writeUTF(taggBuscar);
                     boolean existe = true;
+                    //mientras este a TRUE leemos los que nos envia el servidor
                     while (existe) {
                         try {
                             flujoEntrada = new DataInputStream(conexion.getInputStream());
                             String t = flujoEntrada.readUTF();
-                            Log.i("titulo", "titulo: " + t);
 
                             if (!t.equalsIgnoreCase("final")) {
+                                //leemos las etiquetas que tiene y el buffer
                                 String et = flujoEntrada.readUTF();
-                                Log.i("etiqueta", "etiqueta: " + et);
                                 int buff = flujoEntrada.readInt();
-                                Log.i("buffer", "buffer: " + buff);
 
-
+                                //cremos el buffer
                                 buffer = new byte[buff];
 
+                                //leemos bytes
                                 for (int i = 0; i < buff; i++) {
                                     buffer[i] = flujoEntrada.readByte();
                                 }
 
-                                bitmap = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);
-                                arrBit.add(new Imagen(t, et, bitmap));
+                                //creamos la foto
+                                Bitmap bitmap2 = BitmapFactory.decodeByteArray(buffer, 0, buffer.length);
+                                //creamos una clase Imagen y la añadimos al array
+                                arrBit.add(new Imagen(t, et, bitmap2));
                                 Log.i("fin", "fin");
 
                             } else {
+                                //si no hay mas fotos cambiamos a false
                                 existe = false;
                             }
                         } catch (EOFException e) {
                             break;
                         }
                     }
-
-                    //imageV.setImageBitmap(arrBit.get(0));
-
                     flujoEntrada.close();
 
 
@@ -228,16 +247,13 @@ public class MainActivity extends AppCompatActivity {
 
                 dos.flush();
                 dos.close();
-
+                conexion.close();
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             return s;
         }
-        // protected void onPostExecute(String s2){
-        //txtBuscarTagg.setText(s2);
-        //}
-
     }
 }
